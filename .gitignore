@@ -1,7 +1,10 @@
-env/
-obj/
-.vscode
-.vs
+/env
+/obj
+/.vscode
+/.vs
+/**/*.egg-info
+
+*.pyc
 *.zip
 *.dll
 *.pdb

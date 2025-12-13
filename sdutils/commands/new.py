@@ -6,7 +6,7 @@ import shutil
 import os
 import re
 
-import _click as click
+import click
 
 
 MOD_NAME_PROP = "@MODNAME"
@@ -111,15 +111,13 @@ def cmd_new(mod_name: str):
     """
     Creates a new 7D2D Modding project
     """
-
     PLACEHOLDERS = {MOD_NAME_PROP: mod_name}
 
-    starter_dir = Path(__file__, "../../_starter").resolve()
+    templates_dir = Path(__file__, "../../templates").resolve()
 
     if Path(mod_name).exists():
         raise SystemExit(f"Error: A folder with name '{mod_name}' already exists")
 
-    # fmt: off
     csproj = f"{_format_kebab(mod_name)}.csproj"
 
     os.makedirs(mod_name)
@@ -131,18 +129,17 @@ def cmd_new(mod_name: str):
     os.makedirs(Path(mod_name, "Scripts"))
     os.makedirs(Path(mod_name, "UIAtlases/ItemIconAtlas"))
 
-    shutil.copy(Path(starter_dir, "ModInfo.xml"), Path(mod_name, "ModInfo.xml"))
-    shutil.copy(Path(starter_dir, "ModConfig.xml"), Path(mod_name, "ModConfig.xml"))
-    shutil.copy(Path(starter_dir, ".csproj"), Path(mod_name, csproj))
-    shutil.copy(Path(starter_dir, "gitignore.template"), Path(mod_name, ".gitignore"))
-    shutil.copy(Path(starter_dir, "ModApi.cs"), Path(mod_name, "Harmony/ModApi.cs"))
-    shutil.copy(Path(starter_dir, "build.json"), Path(mod_name, "build.json"))
-    # fmt: on
+    shutil.copy(Path(templates_dir, "ModInfo.xml"), Path(mod_name, "ModInfo.xml"))
+    shutil.copy(Path(templates_dir, "ModConfig.xml"), Path(mod_name, "ModConfig.xml"))
+    shutil.copy(Path(templates_dir, ".csproj"), Path(mod_name, csproj))
+    shutil.copy(Path(templates_dir, "gitignore.template"), Path(mod_name, ".gitignore"))
+    shutil.copy(Path(templates_dir, "ModApi.cs"), Path(mod_name, "Harmony/ModApi.cs"))
+    shutil.copy(Path(templates_dir, "sdutils.json"), Path(mod_name, "sdutils.json"))
 
     _render_template(Path(mod_name, csproj), PLACEHOLDERS)
     _render_template(Path(mod_name, "ModInfo.xml"), PLACEHOLDERS)
     _render_template(Path(mod_name, "Harmony/ModApi.cs"), PLACEHOLDERS)
-    _render_template(Path(mod_name, "build.json"), PLACEHOLDERS)
+    _render_template(Path(mod_name, "sdutils.json"), PLACEHOLDERS)
 
     try:
         subprocess.run(f"git init {Path(mod_name)}", capture_output=True)

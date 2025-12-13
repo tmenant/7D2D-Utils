@@ -11,10 +11,10 @@ import json
 import glob
 import os
 
-import _click as click
+import click
 
-from . import utils
-import config
+from .. import utils
+from ..config import USER_CONFIG
 
 
 def _return_code(command: str, quiet: bool = False) -> int:
@@ -24,7 +24,7 @@ def _return_code(command: str, quiet: bool = False) -> int:
 class SaveCleaningData:
 
     def __init__(self, world: str, save: str, hard: bool = False):
-        self.world  = world
+        self.world = world
         self.save = save
         self.hard = hard
 
@@ -48,7 +48,7 @@ class ModBuilder:
         self.root_dir = root.resolve()
         self.build_infos = build_infos
         self.mod_name = build_infos["name"]
-        self.game_path = Path(build_infos.get("game_path") or config.PATH_7D2D)
+        self.game_path = Path(build_infos.get("game_path") or USER_CONFIG.PATH_7D2D)
         self.mod_path = Path(self.game_path, "Mods", self.mod_name)
         self.prefabs = build_infos.get("prefabs")
 
@@ -72,10 +72,10 @@ class ModBuilder:
         """
         TODOC
         """
-        build_infos = Path(dir, "build.json")
+        build_infos = Path(dir, "sdutils.json")
 
         if not build_infos.exists():
-            raise SystemExit("File not found: 'build.json'")
+            raise SystemExit("File not found: 'sdutils.json'")
 
         with open(Path(dir, build_infos), "rb") as reader:
             datas: dict = json.load(reader)
@@ -130,7 +130,7 @@ class ModBuilder:
         world_name = cleaning_datas.world
         save_name = cleaning_datas.save
 
-        save_dir = Path(config.PATH_7D2D_USER, f"Saves/{world_name}/{save_name}")
+        save_dir = Path(USER_CONFIG.PATH_7D2D_USER, f"Saves/{world_name}/{save_name}")
 
         shutil.rmtree(Path(save_dir, "Region"), ignore_errors=True)
         shutil.rmtree(Path(save_dir, "DynamicMeshes"), ignore_errors=True)
@@ -159,14 +159,16 @@ class ModBuilder:
 
         for dep in self.dependencies:
 
-            build_infos = Path(dep, "build.json")
+            build_infos = Path(dep, "sdutils.json")
 
             if not build_infos.exists():
                 raise SystemExit(f"Can't find '{build_infos}'")
 
             builder = ModBuilder(dep)
 
-            print(f"build {builder.commit_hash[:8]} '{builder.mod_name}' {self._pending_modifications_count(builder.root_dir)}")
+            print(
+                f"build {builder.commit_hash[:8]} '{builder.mod_name}' {self._pending_modifications_count(builder.root_dir)}"
+            )
 
             builder.build(quiet=True)
 
@@ -249,10 +251,10 @@ class ModBuilder:
         """
         TODOC
         """
-        if config.PATH_7D2D_SERVER is None:
+        if USER_CONFIG.PATH_7D2D_SERVER is None:
             raise ValueError("PATH_7D2D_SERVER is not defined.")
 
-        path = Path(config.PATH_7D2D_SERVER, "../Mods", self.mod_name)
+        path = Path(USER_CONFIG.PATH_7D2D_SERVER, "../Mods", self.mod_name)
         self._install(path)
 
     def start_local(self):
@@ -269,10 +271,10 @@ class ModBuilder:
         """
         TODOC
         """
-        if config.PATH_7D2D_SERVER is None:
+        if USER_CONFIG.PATH_7D2D_SERVER is None:
             raise ValueError("PATH_7D2D_SERVER is not defined.")
 
-        server_directory = config.PATH_7D2D_SERVER.parent
+        server_directory = USER_CONFIG.PATH_7D2D_SERVER.parent
 
         subprocess.Popen(
             cwd=server_directory,
@@ -304,14 +306,14 @@ class ModBuilder:
 
         for element in self.prefabs:
 
-            prefabs = glob.glob(f"{element}*", root_dir=config.PATH_PREFABS)
+            prefabs = glob.glob(f"{element}*", root_dir=USER_CONFIG.PATH_PREFABS)
 
             if not prefabs:
                 print(f"WRN: no prefab found for '{element}'")
 
             for path in prefabs:
 
-                src = Path(config.PATH_PREFABS, path)
+                src = Path(USER_CONFIG.PATH_PREFABS, path)
                 dst = Path(dst_prefabs, src.name)
 
                 if not dst.parent.exists():
@@ -352,7 +354,9 @@ class ModBuilder:
             for dep in dependencies:
                 writer.write(f"{dep.mod_name}={dep.commit_hash.__str__()}\n")
 
-        shutil.make_archive(f"{self.mod_name}-release-{combined_hash[:8]}", "zip", self.build_dir)
+        shutil.make_archive(
+            f"{self.mod_name}-release-{combined_hash[:8]}", "zip", self.build_dir
+        )
 
         print(f"build {combined_hash[:8]} done in {time.time() - start:.1f}s")
 
@@ -422,7 +426,7 @@ def cmd_release():
 @click.command("fetch-prefabs")
 def cmd_fetch_prefabs():
     """
-    Copy all prefabs specified in `build.json/prefabs` into the folder `Prefab` of the current working directory
+    Copy all prefabs specified in `sdutils.json/prefabs` into the folder `Prefab` of the current working directory
     """
     ModBuilder().fetch_prefabs()
 
@@ -441,6 +445,6 @@ def cmd_install():
 @click.command("infos")
 def cmd_infos():
     """
-    Show dumped infos of the current build.json file
+    Show dumped infos of the current sdutils.json file
     """
     ModBuilder().show_infos()

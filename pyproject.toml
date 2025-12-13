@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdutils"
+version = "0.1.0"
+description = "A specialized CLI to automate 7 Days to Die modding workflows."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "click==8.3.1"
+]
+
+[project.scripts]
+sdutils = "sdutils.cli:cli"
+
+[tool.setuptools.packages.find]
+exclude = ["ignore*"]

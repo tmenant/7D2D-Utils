@@ -38,7 +38,7 @@ to check installation, open a new terminal the run `7D_UTILS`, it should display
 
 Once installed, you'll need to configure the app through the file `config.json`
 
-You can also override these variables from any `build.json` file of a modding project, to work on a specific game version.
+You can also override these variables from any `sdutils.json` file of a modding project, to work on a specific game version.
 
 ``` json
 {
@@ -50,11 +50,11 @@ You can also override these variables from any `build.json` file of a modding pr
 ```
 
 
-## Mod build Configuration (build.json)
+## Mod build Configuration (sdutils.json)
 
-Modding projects must have their own `build.json` file.
+Modding projects must have their own `sdutils.json` file.
 
-This file must be placed in the root directory of the modding project, and will be used to configure how the mod must be built, here is an example of a `build.json` file:
+This file must be placed in the root directory of the modding project, and will be used to configure how the mod must be built, here is an example of a `sdutils.json` file:
 
 ```json
 {
