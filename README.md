@@ -1,129 +1,210 @@
 # 7D2D Utils
 
-This projects provides a command line interface made in python, to manage 7 days to die modding projects.
+## Overview
 
-It provides usefull command for:
+**7D2D Utils** is a Python-based command-line interface designed to simplify and automate common workflows involved in *7 Days to Die* modding.
 
-* Automating mods build processes, (with or without C# dll)
-* creating and configuring new modding project quickly
-* Starting a local game session, or with a local dedicated server
+It targets mod developers who want a reproducible, scriptable, and efficient workflow without relying on ad-hoc scripts or manual steps.
 
-## Requirements
+Key features:
 
-* Windows 10+
-* [python 3.11+](https://www.python.org/downloads/)
-* [.NET Framework 4.8+](https://dotnet.microsoft.com/fr-fr/download) (for building dll mods only)
-* [git 2.32+](https://git-scm.com/downloads) (for auto updates only)
+* Automated mod build processes (with or without C# DLLs)
+* Fast creation and configuration of new modding projects
+* One-command launch of local game sessions or local dedicated servers
 
+## Table of Contents
+
+* [Command Line Features](#command-line-features)
+* [Supported Platform](#supported-platform)
+* [Installation](#installation)
+
+  * [GitHub installation](#github-installation)
+  * [Manual installation (development only)](#manual-installation-development-only)
+* [Global Configuration](#global-configuration)
+* [Mod Project Configuration](#mod-project-configuration)
+
+  * [Configuration Schema](#configuration-schema)
+  * [Example](#example)
+* [Configuration Reference](#configuration-reference)
+* [License](#license)
+
+## Command Line Features
+
+| Command         | Description                                                                                           |
+| --------------- | ----------------------------------------------------------------------------------------------------- |
+| `build`         | Compile the project in the current working directory and create a zip archive ready for testing.      |
+| `fetch-prefabs` | Copy all prefabs specified in `sdutils.json/prefabs` into the folder `Prefab` of the current project. |
+| `infos`         | Show detailed info of the current `sdutils.json` configuration.                                       |
+| `install`       | Build the project then install the mod in the 7 Days Mods folder.                                     |
+| `new`           | Creates a new 7D2D modding project.                                                                   |
+| `release`       | Compile the project and create the release zip archive.                                               |
+| `shut-down`     | Hard closes all instances of 7DaysToDie.exe and 7DaysToDieServer.exe.                                 |
+| `start`         | Compile the project, then start a local game session.                                                 |
+
+## Supported Platform
+
+* **Operating System**: Windows 10 or later
+* **Python**: 3.11 or later
+* **.NET Framework**: 4.8 or later (required only for mods containing C# DLLs)
 
 ## Installation
 
-Cloning the repository
-```
-cd path/to/7D2D-utils
-git clone https://github.com/VisualDev-FR/7D2D-Utils
-```
+### GitHub installation
 
-Adding the path of the [bin directory](./bin) to your environement variable `PATH`
+You can install the latest version of **7D2D Utils** directly from GitHub using pip:
 
-* windows search bar/modify environement variables for your account
-* user variables for `your_username`/path/edit/new
-* then enter the path to `path/to/cloned/respository/bin`
-* close all window by clicking `OK`
-
-to check installation, open a new terminal the run `7D_UTILS`, it should display the cli help text.
-
-
-## 7D-Utils Configuration (config.json)
-
-Once installed, you'll need to configure the app through the file `config.json`
-
-You can also override these variables from any `sdutils.json` file of a modding project, to work on a specific game version.
-
-``` json
-{
-    "PATH_7D2D": "path/to/dir/steamapps/common/7 Days To Die",
-    "PATH_7D2D_EXE": "path/to/file/steamapps/common/7 Days To Die/7DaysToDie.exe",
-    "PATH_7D2D_SERVER": "path/to/file/steamapps/common/7 Days to Die Dedicated Server/7DaysToDieServer.exe",
-    "PATH_7D2D_USER": "path/to/dir/AppData/Roaming/7DaysToDie"
-}
+```bash
+pip install git+https://github.com/VisualDev-FR/7D2D-Utils.git
 ```
 
+After installation, the `sdutils` command is available in your terminal.
 
-## Mod build Configuration (sdutils.json)
+Verify installation:
 
-Modding projects must have their own `sdutils.json` file.
+```bash
+sdutils --help
+```
 
-This file must be placed in the root directory of the modding project, and will be used to configure how the mod must be built, here is an example of a `sdutils.json` file:
+### Manual installation (development only)
+
+Clone the repository:
+
+```bash
+git clone https://github.com/VisualDev-FR/7D2D-Utils.git
+cd 7D2D-Utils
+```
+
+Install in editable mode:
+
+```bash
+pip install -e .
+```
+
+Intended for contributors or development usage.
+
+## Global Configuration
+
+If you plan to build a C# dll from the provided templates, ensure the environment variable `PATH_7D2D` points to your game directory:
+
+```
+setx PATH_7D2D="path/to/steamapps/common/7DaysToDie"
+```
+
+On first use, **7D2D Utils** relies on a global configuration file located at:
+
+```
+C:/Users/<username>/AppData/Roaming/sdutils.json
+```
+
+It defines paths to your *7 Days to Die* installation and user data directories.
+
+### Example
 
 ```json
 {
-    "name": "cave-prefabs",
-    "csproj": null,
-    "zip_name": "",
-    "include": [
-        "ModInfo.xml",
-        "Config",
-        "Prefabs"
-    ],
-    "prefabs": [
-        "relative/path/from/userdata/LocalPrefabs/*.*"
-    ],
-    "dependencies": [
-        "../relative/path/to/dependency-1",
-    ]
+    "PATH_7D2D": "path/to/steamapps/common/7 Days To Die",
+    "PATH_7D2D_EXE": "path/to/steamapps/common/7 Days To Die/7DaysToDie.exe",
+    "PATH_7D2D_SERVER": "path/to/7 Days to Die Dedicated Server/7DaysToDieServer.exe",
+    "PATH_7D2D_USER": "path/to/AppData/Roaming/7DaysToDie"
 }
 ```
 
-* `name`
+### Configuration Override
 
-    name of the project, used to auto-fill ModInfow.xml, code snippets and for zip archive file
+A `sdutils.json` file at the root of a modding project **overrides global configuration**, allowing multiple game versions or environments.
 
-    ```json
-    "name": "my-mod-name"
-    ```
 
-* `csproj` [Optional]
+## Mod Project Configuration
 
-    name of the csproj to build, null if there is no dll to build
+Each modding project must define its own `sdutils.json` at the project root, controlling how the mod is built, packaged, and deployed.
 
-    ```jsonc
-    "csproj": null | "my-mod.csproj"
-    ```
+## Configuration Schema
 
-* `zip_name` [Optional]
+| Key            | Type             | Required | Description                                                       |
+| -------------- | ---------------- | -------- | ----------------------------------------------------------------- |
+| `name`         | `string`         | yes      | Mod identifier used for metadata, defaults, and build outputs.    |
+| `csproj`       | `string \| null` | no       | C# project file to build, or `null` if none.                      |
+| `include`      | `string[]`       | yes      | Files/directories included in the release archive.                |
+| `prefabs`      | `string[]`       | no       | Prefab sources imported from the user data directory.             |
+| `dependencies` | `string[]`       | no       | Additional mod dependencies (relative or absolute paths).         |
+| `clear_saves`  | `object[]`       | no       | Save directories to clear before running (`world` + `save`).      |
+| `game_path`    | `string \| null` | no       | Overrides global *7 Days to Die* game path for this project only. |
+| `dedi_path`    | `string \| null` | no       | Overrides global dedicated server path for this project only.     |
 
-    allow to override the name of the zip archive. The `.zip` extension must **NOT** be provided here
+### Example
 
-    ```jsonc
-    "zip_name": null | "custom-zip-name"
-    ```
-
-* `Include`
-
-    Files to copy and to include in the release archive.
-
-    ```json
+```json
+{
+    "name": "my-mod-name",
+    "csproj": "myProject.csproj",
     "include": [
         "ModInfo.xml",
+        "ModConfig.xml",
         "Config",
+        "UIAtlases",
+        "Resources",
         "Prefabs"
-    ]
-    ```
-
-* `prefabs`
-
-    ```json
+    ],
     "prefabs": [
-        "relative/path/from/userdata/LocalPrefabs/*.*"
-    ]
-    ```
-
-* `dependencies`
-
-    ```json
+        "relative/path/to/prefab-to-include"
+    ],
     "dependencies": [
-        "../relative/path/to/dependency-1",
-        "C:/absolute/path/to/dependency-2"
-    ]
-    ```
+        "relative-path/to/another-mod-dir"
+    ],
+    "clear_saves": [
+        {
+            "world": "world-name",
+            "save": "save-directory-name"
+        }
+    ],
+    "game_path": null,
+    "dedi_path": null
+}
+```
+
+## Configuration Reference
+
+### `name`
+
+Project identifier for:
+
+* Populating `ModInfo.xml`
+* Generating code snippets
+* Determining default archive name
+
+### `csproj` *(optional)*
+
+C# project to build; `null` if no DLL.
+
+### `include`
+
+Files/directories copied into the release archive.
+
+### `prefabs`
+
+Prefab sources imported from the game user directory.
+
+### `dependencies`
+
+Additional mod dependencies; supports relative and absolute paths.
+
+### `clear_saves`
+
+Saves to clear automatically, when starting the game with `start` command:
+
+```json
+"clear_saves": [
+    {
+        "world": "world-name",
+        "save": "save-directory-name"
+    }
+]
+```
+
+### `game_path` / `dedi_path`
+
+Optional overrides for global game or dedicated server paths.
+
+## License
+
+This project is distributed under the MIT License.
