@@ -254,7 +254,7 @@ class ModBuilder:
         if USER_CONFIG.PATH_7D2D_SERVER is None:
             raise ValueError("PATH_7D2D_SERVER is not defined.")
 
-        path = Path(USER_CONFIG.PATH_7D2D_SERVER, "../Mods", self.mod_name)
+        path = Path(USER_CONFIG.PATH_7D2D_SERVER, "Mods", self.mod_name)
         self._install(path)
 
     def start_local(self):
@@ -271,10 +271,10 @@ class ModBuilder:
         """
         TODOC
         """
-        if USER_CONFIG.PATH_7D2D_SERVER is None:
-            raise ValueError("PATH_7D2D_SERVER is not defined.")
+        server_directory = USER_CONFIG.PATH_7D2D_SERVER
 
-        server_directory = USER_CONFIG.PATH_7D2D_SERVER.parent
+        if server_directory is None:
+            raise ValueError("PATH_7D2D_SERVER is not defined.")
 
         subprocess.Popen(
             cwd=server_directory,
