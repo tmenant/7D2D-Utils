@@ -18,11 +18,16 @@ from ..config import USER_CONFIG
 
 
 def _return_code(command: str, quiet: bool = False) -> int:
+    """
+    Executes a system command and returns the exit status code.
+    """
     return subprocess.run(command, capture_output=quiet).returncode
 
 
 class SaveCleaningData:
-
+    """
+    Data structure holding parameters for world/save data cleanup.
+    """
     def __init__(self, world: str, save: str, hard: bool = False):
         self.world = world
         self.save = save
@@ -30,10 +35,19 @@ class SaveCleaningData:
 
 
 class ModBuilder:
+    """
+    Main orchestrator for 7D2D mod development workflows.
+
+    Handles compilation of C# projects, dependency resolution, asset packaging,
+    and deployment to local or server game directories.
+    """
 
     def __init__(self, root: Path = None):
         """
-        TODOC
+        Initializes the builder by loading 'sdutils.json' and resolving project paths.
+
+        Args:
+            root: The project root directory. Defaults to current working directory.
         """
         if root is None:
             root = Path(".")
@@ -70,7 +84,10 @@ class ModBuilder:
 
     def _read_build_infos(self, dir: Path) -> dict:
         """
-        TODOC
+        Reads and parses the 'sdutils.json' configuration file.
+
+        Raises:
+            SystemExit: If the configuration file is missing.
         """
         build_infos = Path(dir, "sdutils.json")
 
@@ -83,7 +100,9 @@ class ModBuilder:
         return datas
 
     def _include_file(self, path: Path, move: bool = False):
-
+        """
+        Copies or moves a single file to the build directory.
+        """
         dst = Path(self.build_dir, path.relative_to(self.root_dir))
 
         if not dst.parent.exists():
@@ -95,14 +114,16 @@ class ModBuilder:
             shutil.copy(path, dst)
 
     def _include_dir(self, dir_path: Path):
-
+        """
+        Recursively copies a directory to the build directory.
+        """
         dst = Path(self.build_dir, dir_path.name)
-
         shutil.copytree(dir_path, dst)
 
     def _include_glob(self, include: str, move: bool = False):
         """
-        TODOC
+        Resolves a glob pattern and includes matching files or directories
+        into the build folder.
         """
         for element in glob.glob(include, recursive=True, root_dir=self.root_dir):
 
@@ -118,14 +139,15 @@ class ModBuilder:
 
     def _add_includes(self):
         """
-        TODOC
+        Processes the 'include' list from configuration to populate the build directory.
         """
         for include in self.include:
             self._include_glob(include)
 
     def _clear_save(self, cleaning_datas: SaveCleaningData):
         """
-        TODOC
+        Clears specific save data (Regions, Meshes, etc.) to ensure a fresh
+        environment for testing. Performs a full directory delete if 'hard' is True.
         """
         world_name = cleaning_datas.world
         save_name = cleaning_datas.save
@@ -137,24 +159,28 @@ class ModBuilder:
         shutil.rmtree(Path(save_dir, "decoration.7dt"), ignore_errors=True)
 
         if cleaning_datas.hard:
-            shutil.rmtree(save_dir)
+            shutil.rmtree(save_dir, ignore_errors=True)
 
     def _clear_saves(self):
         """
-        TODOC
+        Iterates through all configured save cleaning tasks.
         """
         for world_clear_data in self.save_cleaning_datas:
             self._clear_save(world_clear_data)
 
     def _compile_csproj(self, quiet: bool = False) -> bool:
-
+        """
+        Triggers dotnet build for the C# project if defined in config.
+        """
         if self.build_cmd is None:
             return True
 
         return _return_code(self.build_cmd, quiet) == 0
 
     def _build_dependencies(self) -> List[ModBuilder]:
-
+        """
+        Recursively triggers the build process for all listed mod dependencies.
+        """
         zip_archives = []
 
         for dep in self.dependencies:
@@ -178,7 +204,7 @@ class ModBuilder:
 
     def _pending_modifications_count(self, repo_path: Path) -> int:
         """
-        TODOC
+        Returns the number of uncommitted changes (staged and unstaged) in the repository.
         """
         result = subprocess.check_output(
             "git diff --name-status --staged && git diff --name-status",
@@ -190,14 +216,15 @@ class ModBuilder:
 
     def _write_version_file(self):
         """
-        TODOC
+        Creates a version.txt file in the build folder containing the current Git hash.
         """
         with open(Path(self.build_dir, "version.txt"), "w") as writer:
             writer.write(self.commit_hash.__str__())
 
     def _combine_commit_hashes(self, dependencies: List[ModBuilder]) -> str:
         """
-        TODOC
+        Generates a unique SHA256 hash representing the current state of
+        the mod and all its dependencies.
         """
         hashes = [dep.commit_hash.__str__() for dep in dependencies]
         hashes.append(self.commit_hash.__str__())
@@ -206,7 +233,10 @@ class ModBuilder:
         return hashlib.sha256("".join(hashes).encode()).hexdigest()
 
     def build(self, clean: bool = False, quiet: bool = False):
-
+        """
+        Core build pipeline: compiles code, collects assets, and generates
+         a redistributable ZIP archive.
+        """
         if self.zip_archive.exists():
             os.remove(self.zip_archive)
 
@@ -233,7 +263,7 @@ class ModBuilder:
 
     def _install(self, path: Path):
         """
-        TODOC
+        Unpacks the built mod ZIP into a target destination directory.
         """
         if path.exists():
             shutil.rmtree(path)
@@ -243,13 +273,13 @@ class ModBuilder:
 
     def install_local(self):
         """
-        TODOC
+        Installs the mod into the local game 'Mods' folder.
         """
         self._install(self.mod_path)
 
     def install_server(self):
         """
-        TODOC
+        Installs the mod into the dedicated server 'Mods' folder.
         """
         if USER_CONFIG.PATH_7D2D_SERVER is None:
             raise ValueError("PATH_7D2D_SERVER is not defined.")
@@ -258,7 +288,9 @@ class ModBuilder:
         self._install(path)
 
     def start_local(self):
-
+        """
+        Launches the local game client (without EAC) and cleans up saves.
+        """
         subprocess.Popen(
             cwd=self.game_path,
             executable=Path(self.game_path, "7DaysToDie.exe"),
@@ -269,7 +301,7 @@ class ModBuilder:
 
     def start_server(self):
         """
-        TODOC
+        Launches the local dedicated server instance.
         """
         server_directory = USER_CONFIG.PATH_7D2D_SERVER
 
@@ -286,13 +318,16 @@ class ModBuilder:
 
     def shut_down(self):
         """
-        TODOC
+        Forcefully closes any running game or server processes.
         """
         subprocess.run("taskkill /F /IM 7DaysToDie.exe", capture_output=True)
         subprocess.run("taskkill /F /IM 7DaysToDieServer.exe", capture_output=True)
 
     def fetch_prefabs(self, root: Path = None):
-
+        """
+        Copies required prefab files from the game data folder to the project folder.
+        Uses glob matching based on the configuration list.
+        """
         if not self.prefabs:
             return
 
@@ -327,7 +362,8 @@ class ModBuilder:
 
     def release(self) -> Path:
         """
-        TODOC
+        Bundles the mod and all its dependencies into a single timestamped
+        release archive with a combined version hash.
         """
         start = time.time()
         self.build()

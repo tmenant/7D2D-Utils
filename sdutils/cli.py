@@ -11,7 +11,8 @@ from .commands.build import (
     cmd_fetch_prefabs,
 )
 
-ascii = r"""
+# Application branding logo in ASCII art
+ascii_logo = r"""
   ______ _____      _    _ _______ _____ _       _____
  |____  |  __ \    | |  | |__   __|_   _| |     / ____|
      / /| |  | |___| |  | |  | |    | | | |    | (___
@@ -22,22 +23,31 @@ ascii = r"""
 
 
 class CustomHelp(click.Group):
+    """
+    Overwrites the default Click Help formatter to inject the ASCII art logo
+    at the top of the help message.
+    """
     def get_help(self, ctx):
-        return f"{ascii}\n{super().get_help(ctx)}"
+        return f"{ascii_logo}\n{super().get_help(ctx)}"
 
 
 @click.group(cls=CustomHelp, context_settings={"max_content_width": 120})
 def cli():
     """
-    A set of commands to manage 7 days to die modding projects.
+    7D2D Utils: A set of automated commands to manage 7 Days to Die modding projects.
+
+    This CLI handles everything from project scaffolding to building,
+    deploying, and launching the game.
     """
     pass
 
 
-# new.py
+# --- Command Registration ---
+
+# From new.py: Handles project creation
 cli.add_command(cmd_new)
 
-# build.py
+# From build.py: Handles build, packaging, and lifecycle management
 cli.add_command(cmd_build)
 cli.add_command(cmd_release)
 cli.add_command(cmd_fetch_prefabs)
