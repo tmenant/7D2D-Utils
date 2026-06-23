@@ -11,6 +11,7 @@ import json
 import glob
 import os
 
+from tabulate import tabulate
 import click
 
 from .. import utils
@@ -28,6 +29,7 @@ class SaveCleaningData:
     """
     Data structure holding parameters for world/save data cleanup.
     """
+
     def __init__(self, world: str, save: str, hard: bool = False):
         self.world = world
         self.save = save
@@ -400,19 +402,21 @@ class ModBuilder:
 
     def show_infos(self) -> None:
         """
-        TODOC
+        Display the mod informations in a clean table format.
         """
-        print(f"mod_name ..... : {self.mod_name}")
-        print(f"commit_hash .. : {self.commit_hash}")
-        print()
-        print(f"root_dir ..... : {self.root_dir}")
-        print(f"build_dir .... : {self.build_dir}")
-        print(f"csproj ....... : {self.csproj}")
-        print(f"zip_archive .. : {self.zip_archive}")
-        print()
-        print(f"game_path .... : {self.game_path}")
-        print(f"mod_path ..... : {self.mod_path}")
-        print()
+        headers = ["Poperty", "Value"]
+        data = [
+            ["Mod Name",    self.mod_name],
+            ["Commit Hash", self.commit_hash],
+            ["Root Dir",    self.root_dir],
+            ["Build Dir",   self.build_dir],
+            ["csproj",     self.csproj],
+            ["Zip Archive", self.zip_archive],
+            ["Game Path",   self.game_path],
+            ["Mod Path",    self.mod_path]
+        ]
+
+        print("\n" + tabulate(data, headers=headers, tablefmt="github") + "\n")
 
 
 # fmt: off
