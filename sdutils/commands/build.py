@@ -443,8 +443,8 @@ def cmd_start_local(server: bool):
         builder.start_server()
 
 
-@click.command("shut-down")
-def cmd_shut_down():
+@click.command("kill")
+def cmd_kill():
     """
     Hard closes all instances of 7DaysToDie.exe and 7DaysToDieServer.exe
     """
