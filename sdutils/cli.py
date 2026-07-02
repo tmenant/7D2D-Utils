@@ -7,7 +7,7 @@ from .commands.build import (
     cmd_release,
     cmd_install,
     cmd_kill,
-    cmd_start_local,
+    cmd_start,
     cmd_fetch_prefabs,
 )
 
@@ -51,7 +51,7 @@ cli.add_command(cmd_new)
 cli.add_command(cmd_build)
 cli.add_command(cmd_release)
 cli.add_command(cmd_fetch_prefabs)
-cli.add_command(cmd_start_local)
+cli.add_command(cmd_start)
 cli.add_command(cmd_kill)
 cli.add_command(cmd_install)
 cli.add_command(cmd_infos)

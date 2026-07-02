@@ -289,14 +289,14 @@ class ModBuilder:
         path = Path(USER_CONFIG.PATH_7D2D_SERVER, "Mods", self.mod_name)
         self._install(path)
 
-    def start_local(self):
+    def start_local(self, *args):
         """
         Launches the local game client (without EAC) and cleans up saves.
         """
         subprocess.Popen(
             cwd=self.game_path,
             executable=Path(self.game_path, "7DaysToDie.exe"),
-            args=["--noeac"],
+            args=["--noeac", *args],
         )
 
         self._clear_saves()
@@ -431,16 +431,25 @@ def cmd_build(clean: bool, quiet: bool):
 
 
 @click.command("start")
-@click.option("-s", "--server", is_flag=True)
-def cmd_start_local(server: bool):
+@click.option("-s", "--server", is_flag=True, help="Start the dedicated server alongside the game.")
+@click.option("--skipintro", is_flag=True, help="Skip the game's introduction videos and logos.")
+@click.option("--quick-continue", is_flag=True, help="Automatically load the most recent save file upon startup.")
+def cmd_start(server: bool, **game_options):
     """
-    Compile the project, then start a local game
+    Compile the project, then start a local game.
     """
+    # Reconstruct the game flags from the dynamic options
+    game_args = [
+        f"-{key}".replace("_", "-")
+        for key, value in game_options.items()
+        if value
+    ]
+
     builder = ModBuilder()
     builder.shut_down()
     builder.build()
     builder.install_local()
-    builder.start_local()
+    builder.start_local(*game_args)
 
     if server:
         builder.install_server()
