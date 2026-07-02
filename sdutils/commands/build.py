@@ -156,9 +156,11 @@ class ModBuilder:
 
         save_dir = Path(USER_CONFIG.PATH_7D2D_USER, f"Saves/{world_name}/{save_name}")
 
-        shutil.rmtree(Path(save_dir, "Region"), ignore_errors=True)
         shutil.rmtree(Path(save_dir, "DynamicMeshes"), ignore_errors=True)
-        shutil.rmtree(Path(save_dir, "decoration.7dt"), ignore_errors=True)
+        shutil.rmtree(Path(save_dir, "ConfigsDump"), ignore_errors=True)
+        shutil.rmtree(Path(save_dir, "Region"), ignore_errors=True)
+
+        Path(save_dir, "decoration.7dt").unlink(missing_ok=True)
 
         if cleaning_datas.hard:
             shutil.rmtree(save_dir, ignore_errors=True)
